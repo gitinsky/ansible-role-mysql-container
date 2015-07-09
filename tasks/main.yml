@@ -1,0 +1,27 @@
+- name: create ext volume for data
+  file: state=directory path={{ ext_mysql_data_volume }}
+
+- name: create ext volume for configs
+  file: state=directory path={{ ext_mysql_conf_volume }}
+
+- name: put my.cnf
+  template: src=my.cnf dest={{ ext_mysql_conf_volume }}/my.cnf
+
+- name: check if a MySQL container is started
+  command: bash -c "docker ps | grep mysql"
+  ignore_errors: True
+  register: result
+
+- name: start a MySQL container
+  command: docker run -d
+              -h {{ ansible_hostname }}-mysql
+              --dns {{ docker_dns_2 }}
+              --dns {{ ansible_docker0.ipv4.address }}
+              --dns-search node.dc1.consul
+              -v {{ ext_mysql_data_volume }}:/var/lib/mysql
+              -v {{ ext_mysql_conf_volume }}/my.cnf:/etc/mysql/my.cnf
+              -p 3306:3306
+              --restart=always
+              --name=mysql gitinsky/mysql:0.1.1
+  register: docker_id
+  when: result|failed
