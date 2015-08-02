@@ -22,6 +22,6 @@
               -v {{ ext_mysql_conf_volume }}/my.cnf:/etc/mysql/my.cnf
               -p 3306:3306
               --restart=always
-              --name=mysql gitinsky/mysql:0.1.1
+              --name=mysql gitinsky/mysql:0.1.2
   register: docker_id
   when: result|failed
