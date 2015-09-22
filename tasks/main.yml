@@ -16,7 +16,6 @@
   command: docker run -d
               -h {{ ansible_hostname }}-mysql
               --dns {{ docker_dns_2 }}
-              --dns {{ ansible_docker0.ipv4.address }}
               --dns-search node.dc1.consul
               -v {{ ext_mysql_data_volume }}:/var/lib/mysql
               -v {{ ext_mysql_conf_volume }}/my.cnf:/etc/mysql/my.cnf
