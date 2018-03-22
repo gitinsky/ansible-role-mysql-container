@@ -1,0 +1,3 @@
+ext_mysql_data_volume: /var/lib/docker-extvols/mysql/data
+ext_mysql_tmp_volume: /var/lib/docker-extvols/mysql/tmp
+ext_mysql_varrun_volume: /var/lib/docker-extvols/mysql/varrun

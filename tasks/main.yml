@@ -1,26 +1,30 @@
 - name: create ext volume for data
   file: state=directory path={{ ext_mysql_data_volume }}
 
-- name: create ext volume for configs
-  file: state=directory path={{ ext_mysql_conf_volume }}
+- name: create ext volume for tmp
+  file: state=directory path={{ ext_mysql_tmp_volume }} mode=1777
 
-- name: put my.cnf
-  template: src=my.cnf dest={{ ext_mysql_conf_volume }}/my.cnf
+- name: create ext volume for /var/run
+  file: state=directory path={{ ext_mysql_varrun_volume }} mode=1777
 
-- name: check if a MySQL container is started
-  command: bash -c "docker ps | grep mysql"
-  ignore_errors: True
-  register: result
-
-- name: start a MySQL container
-  command: docker run -d
-              -h {{ ansible_hostname }}-mysql
-              --dns {{ docker_dns_2 }}
-              --dns-search node.dc1.consul
-              -v {{ ext_mysql_data_volume }}:/var/lib/mysql
-              -v {{ ext_mysql_conf_volume }}/my.cnf:/etc/mysql/my.cnf
-              -p 3306:3306
-              --restart=always
-              --name=mysql gitinsky/mysql:0.1.2
-  register: docker_id
-  when: result|failed
+- name: start a Docker container
+  docker_container:
+    name: mysql
+    image: mysql
+    state: started
+    recreate: yes
+    restart_policy: always
+    read_only: yes
+    exposed_ports:
+      - 3306
+    ports:
+      - "3306:3306"
+    volumes:
+      - "{{ ext_mysql_data_volume }}:/var/lib/mysql"
+      - "{{ ext_mysql_tmp_volume }}:/tmp"
+      - "{{ ext_mysql_varrun_volume }}:/run/mysqld"
+    env:
+      MYSQL_ROOT_PASSWORD: "{{ docker_mysql_root_password }}"
+      MYSQL_DATABASE: "{{ docker_mysql_database }}"
+      MYSQL_USER: "{{ docker_mysql_user }}"
+      MYSQL_PASSWORD: "{{ docker_mysql_password }}"
